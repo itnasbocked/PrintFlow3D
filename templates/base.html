@@ -15,7 +15,7 @@
                 {% if request.path.startswith('/client') or request.path.startswith('/admin') %}
                     <a href="/client">Panel Cliente</a>
                     <a href="/admin">Panel Admin</a>
-                    <a href="/" class="btn-secondary logout-btn">Cerrar Sesión</a>
+                    <a href="/logout" class="btn-secondary logout-btn">Cerrar Sesión</a>
                 {% else %}
                     <a href="/#solucion">La Solución</a>
                     <a href="/#flujo">Workflow</a>
