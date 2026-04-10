@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Tablero | PrintFlow 3D{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <h2>Panel de Control <span class="tag">Cliente</span></h2>
+        <a href="#" class="btn-primary">Nuevo Proyecto +</a>
+    </header>
+
+    <div class="dashboard-stats">
+        <div class="stat-box">
+            <span class="stat-number">3</span>
+            <span class="stat-label">En Cola</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-number">1</span>
+            <span class="stat-label">Imprimiendo</span>
+        </div>
+    </div>
+
+    <h3 class="section-subtitle">Mis Archivos</h3>
+    <div class="projects-grid">
+        
+        <div class="tech-card project-card active-print">
+            <div class="node corner-tl"></div><div class="node corner-tr"></div>
+            <div class="node corner-bl"></div><div class="node corner-br"></div>
+            <div class="project-info">
+                <h4>carcasa_dron_v3.stl</h4>
+                <p>Subido: 09 Abr 2026</p>
+            </div>
+            <div class="project-status">
+                <span class="status-indicator printing">Imprimiendo</span>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: 65%;"></div>
+                </div>
+                <p class="time-est">Restan: 02h 15m</p>
+            </div>
+        </div>
+
+        <div class="tech-card project-card">
+            <div class="node corner-tl"></div><div class="node corner-tr"></div>
+            <div class="node corner-bl"></div><div class="node corner-br"></div>
+            <div class="project-info">
+                <h4>engranaje_planetario.step</h4>
+                <p>Subido: 08 Abr 2026</p>
+            </div>
+            <div class="project-status">
+                <span class="status-indicator pending">En Cola</span>
+                <p class="time-est">Tiempo Est: 04h 30m</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

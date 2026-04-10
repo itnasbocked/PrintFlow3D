@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}PrintFlow 3D{% endblock %}</title>
+        
+        <link href="https://api.fontshare.com/v2/css?f[]=clash-display@700,500,400&f[]=urbanist@400,600,300&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href='{{ url_for("static", filename="css/style.css") }}'>
+    </head>
+    <body>
+        <nav class="navbar {% if request.path != '/' %}navbar-solid{% endif %}">
+            <div class="logo">PrintFlow <span>3D</span></div>
+            <div class="nav-menu">
+                {% if request.path.startswith('/client') or request.path.startswith('/admin') %}
+                    <a href="/client">Panel Cliente</a>
+                    <a href="/admin">Panel Admin</a>
+                    <a href="/" class="btn-secondary logout-btn">Cerrar Sesión</a>
+                {% else %}
+                    <a href="/#solucion">La Solución</a>
+                    <a href="/#flujo">Workflow</a>
+                    <a href="/login" class="btn-primary">Iniciar Sesión</a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <footer class="footer">
+            <p>Donde se viene a hacer diseño. | PrintFlow 3D &copy; 2026</p>
+        </footer>
+
+    </body>
+</html>

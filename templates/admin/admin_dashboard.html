@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Administración | PrintFlow 3D{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <h2>Gestión de Producción <span class="tag">Administrador</span></h2>
+    </header>
+
+    <div class="dashboard-stats">
+        <div class="stat-box">
+            <span class="stat-number">5</span>
+            <span class="stat-label">Pendientes</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-number">2</span>
+            <span class="stat-label">En Máquina</span>
+        </div>
+    </div>
+
+    <h3 class="section-subtitle">Cola de Solicitudes</h3>
+    <div class="projects-grid">
+        
+        <div class="tech-card admin-task-card">
+            <div class="node corner-tl"></div><div class="node corner-tr"></div>
+            <div class="node corner-bl"></div><div class="node corner-br"></div>
+            <div class="project-info">
+                <h4>engranaje-planetario.step</h4>
+                <p>Cliente: Santiago Flores</p>
+                <p>Fecha: 09 Abr 2026</p>
+            </div>
+            <div class="admin-actions">
+                <span class="status-indicator pending">Revisión Pendiente</span>
+                <form action="#" method="POST" class="time-assign-form">
+                    <label for="time1">Asignar Tiempo (Horas)</label>
+                    <input type="number" id="time1" name="print_time" min="0.5" step="0.5" required>
+                    <button type="submit" class="btn-primary auth-btn">Mandar a Imprimir</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="tech-card project-card active-print">
+            <div class="node corner-tl"></div><div class="node corner-tr"></div>
+            <div class="node corner-bl"></div><div class="node corner-br"></div>
+            <div class="project-info">
+                <h4>carcasa-dron-v3.stl</h4>
+                <p>Cliente: Empresa The Spot</p>
+                <p>Fecha: 09 Abr 2026</p>
+            </div>
+            <div class="admin-actions">
+                <span class="status-indicator printing">En Máquina</span>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: 65%;"></div>
+                </div>
+                <form action="#" method="POST" class="time-assign-form">
+                    <button type="submit" class="btn-secondary auth-btn">Marcar Terminado</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

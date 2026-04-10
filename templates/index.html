@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio | PrintFlow 3D{% endblock %}
+
+{% block content %}
+    <div class="hero">
+        <div class="hero-content">
+            <p class="tagline">Control total. Impresión profesional.</p>
+            <h1>Print<span>Flow</span> 3D</h1>
+            <h2>Centraliza tus pedidos, optimiza tus tiempos y ofrece <br> una experiencia técnica impecable.</h2>
+            <div class="hero-actions">
+                <a href="#flujo" class="btn-secondary">Cómo funciona</a>
+            </div>
+        </div>
+    </div>
+
+    <section id="solucion" class="problem-solution">
+        <div class="container" style="display: flex; gap: 4rem;">
+            <div class="text-block">
+                <h3>El problema: El caos en la producción</h3>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Perspiciatis hic obcaecati nostrum et est illum minus voluptates repellendus iusto! Dolorem non alias quasi. Dignissimos nesciunt non exercitationem animi nobis aspernatur?</p>
+            </div>
+            <div class="text-block accent">
+                <h3 style="color: var(--red-light);">La solución: PrintFlow 3D</h3>
+                <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Corrupti, sunt qui sit harum, atque cum aspernatur eveniet odio deleniti quas esse labore ipsum. Ipsum dolores error ut quia magni pariatur?</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="flujo" class="workflow">
+        <div class="section-title">
+            <div class="node-divider"></div>
+            <h3>Logística</h3>
+            <p style="color: var(--black-ink); opacity: 0.8;">Gestión técnica en impresión 3D</p>
+        </div>
+
+        <div class="workflow-grid">
+            <div class="tech-card client-node">
+                <div class="node corner-tl"></div><div class="node corner-tr"></div>
+                <div class="node corner-bl"></div><div class="node corner-br"></div>
+                <div class="card-icon" style="color: var(--red-light);">_</div>
+                <h4 style="color: var(--black-ink);">Lado Cliente</h4>
+                <p style="color: var(--black-ink); opacity: 0.9;">Carga de archivos .STL / .STEP y seguimiento en tiempo real del estado de la impresión.</p>
+                <span class="status-indicator">Registro Simple</span>
+            </div>
+
+            <div class="tech-card admin-node">
+                <div class="node corner-tl"></div><div class="node corner-tr"></div>
+                <div class="node corner-bl"></div><div class="node corner-br"></div>
+                <div class="card-icon" style="color: var(--red-light);">[ ]</div>
+                <h4 style="color: var(--black-ink);">Administración</h4>
+                <p style="color: var(--black-ink); opacity: 0.9;">Gestor de cola de impresión, asignación de tiempos y control de material.</p>
+                <span class="status-indicator">Panel de Control</span>
+            </div>
+        </div>
+    </section>
+{% endblock %}
