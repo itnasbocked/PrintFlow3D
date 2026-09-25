@@ -12,19 +12,33 @@
         <nav class="navbar {% if request.path != '/' %}navbar-solid{% endif %}">
             <div class="logo">PrintFlow <span>3D</span></div>
             <div class="nav-menu">
-                {% if request.path.startswith('/client') or request.path.startswith('/admin') %}
+                {% if session.get('user_id') %}
                     <a href="/client">Panel Cliente</a>
-                    <a href="/admin">Panel Admin</a>
-                    <a href="/logout" class="btn-secondary logout-btn">Cerrar Sesión</a>
+                    {% if session.get('email') == 'admin@printflow3d.com' %}
+                        <a href="/admin">Panel Admin</a>
+                    {% endif %}
+                    <a href="/logout" class="btn-secondary logout-btn">Cerrar Sesion</a>
                 {% else %}
-                    <a href="/#solucion">La Solución</a>
+                    <a href="/#solucion">La Solucion</a>
                     <a href="/#flujo">Workflow</a>
-                    <a href="/login" class="btn-primary">Iniciar Sesión</a>
+                    <a href="/login" class="btn-primary">Iniciar Sesion</a>
                 {% endif %}
             </div>
         </nav>
 
         <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-container" style="padding: 1rem 5%; margin-top: 5rem;">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
             {% block content %}
             {% endblock %}
         </main>

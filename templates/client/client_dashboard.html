@@ -6,51 +6,94 @@
 <div class="dashboard-container">
     <header class="dashboard-header">
         <h2>Panel de Control <span class="tag">Cliente</span></h2>
-        <a href="#" class="btn-primary">Nuevo Proyecto +</a>
+        
+        <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form">
+            <div>
+                <label style="display:block; font-size: 0.8rem; font-weight: bold;">Modelo 3D (*)</label>
+                <input type="file" name="file" accept=".stl,.step" required>
+            </div>
+            <div>
+                <label style="display:block; font-size: 0.8rem; font-weight: bold;">Render/Foto (Opcional)</label>
+                <input type="file" name="image" accept="image/png, image/jpeg, image/webp">
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 1.2rem;">Subir Proyecto +</button>
+        </form>
     </header>
 
     <div class="dashboard-stats">
         <div class="stat-box">
-            <span class="stat-number">3</span>
-            <span class="stat-label">En Cola</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-number">1</span>
-            <span class="stat-label">Imprimiendo</span>
+            <span class="stat-number">{{ orders|length }}</span>
+            <span class="stat-label">Total Archivos</span>
         </div>
     </div>
 
     <h3 class="section-subtitle">Mis Archivos</h3>
     <div class="projects-grid">
         
-        <div class="tech-card project-card active-print">
+        {% for order in orders %}
+        <div class="tech-card project-card {% if order.status == 'Imprimiendo' %}active-print{% endif %}">
             <div class="node corner-tl"></div><div class="node corner-tr"></div>
             <div class="node corner-bl"></div><div class="node corner-br"></div>
             <div class="project-info">
-                <h4>carcasa_dron_v3.stl</h4>
-                <p>Subido: 09 Abr 2026</p>
-            </div>
-            <div class="project-status">
-                <span class="status-indicator printing">Imprimiendo</span>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: 65%;"></div>
-                </div>
-                <p class="time-est">Restan: 02h 15m</p>
-            </div>
-        </div>
+                <h4>{{ order.filename }}</h4>
 
-        <div class="tech-card project-card">
-            <div class="node corner-tl"></div><div class="node corner-tr"></div>
-            <div class="node corner-bl"></div><div class="node corner-br"></div>
-            <div class="project-info">
-                <h4>engranaje_planetario.step</h4>
-                <p>Subido: 08 Abr 2026</p>
+                {% if order.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ order.image_filename) }}" class="model-thumbnail" alt="Vista previa del diseño">
+                {% else %}
+                    <img src="{{ url_for('static', filename='src/placeholder.png') }}" class="model-thumbnail" alt="Sin imagen de referencia">
+                {% endif %}
+                
+                <p>Subido: {{ order.created_at }}</p>
             </div>
             <div class="project-status">
-                <span class="status-indicator pending">En Cola</span>
-                <p class="time-est">Tiempo Est: 04h 30m</p>
+                {% if order.status == 'Pendiente' %}
+                    <span class="status-indicator pending">En Revisión Técnica</span>
+                
+                {% elif order.status == 'Cotizado' %}
+                    <span class="status-indicator" style="background: var(--sand-bg); color: var(--black-ink);">Requiere tu Acción</span>
+                    <div style="margin-top: 1.5rem; border: 1px dashed var(--black-ink); padding: 1rem;">
+                        <h4 style="margin: 0 0 0.5rem 0; font-size: 1.5rem;">${{ order.price }}</h4>
+                        <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem;"><strong>Tiempo de producción:</strong> {{ order.print_time_est }} hrs</p>
+                        
+                        {% if order.admin_notes %}
+                            <p style="margin: 0 0 1.5rem 0; font-size: 0.85rem; font-style: italic; opacity: 0.8;">"{{ order.admin_notes }}"</p>
+                        {% else %}
+                            <div style="margin-bottom: 1.5rem;"></div>
+                        {% endif %}
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <form action="{{ url_for('client_decision', order_id=order.id) }}" method="POST" style="flex: 1;">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn-primary" style="width: 100%; padding: 0.6rem; font-size: 0.8rem;">Aceptar</button>
+                            </form>
+                            <form action="{{ url_for('client_decision', order_id=order.id) }}" method="POST" style="flex: 1;">
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="btn-secondary" style="width: 100%; padding: 0.6rem; font-size: 0.8rem; border-color: var(--black-ink); color: var(--black-ink);">Rechazar</button>
+                            </form>
+                        </div>
+                    </div>
+
+                {% elif order.status == 'Aprobado' %}
+                    <span class="status-indicator" style="background: var(--red-light);">Aprobado - En Cola de Producción</span>
+
+                {% elif order.status == 'Imprimiendo' %}
+                    <span class="status-indicator printing">Imprimiendo</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 50%;"></div>
+                    </div>
+                    <p class="time-est">Tiempo Est: {{ order.print_time_est }} Horas</p>
+
+                {% elif order.status == 'Cancelado' %}
+                    <span class="status-indicator" style="background: transparent; color: var(--black-ink); border: 1px solid var(--black-ink);">Cotización Rechazada</span>
+
+                {% else %}
+                    <span class="status-indicator">Terminado</span>
+                {% endif %}
             </div>
         </div>
+        {% else %}
+        <p>No tienes proyectos en cola.</p>
+        {% endfor %}
 
     </div>
 </div>

@@ -10,55 +10,86 @@
 
     <div class="dashboard-stats">
         <div class="stat-box">
-            <span class="stat-number">5</span>
+            <span class="stat-number">{{ orders|length }}</span>
+            <span class="stat-label">Total Solicitudes</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-number">{{ pendientes }}</span>
             <span class="stat-label">Pendientes</span>
         </div>
         <div class="stat-box">
-            <span class="stat-number">2</span>
+            <span class="stat-number">{{ en_maquina }}</span>
             <span class="stat-label">En Máquina</span>
         </div>
     </div>
 
     <h3 class="section-subtitle">Cola de Solicitudes</h3>
     <div class="projects-grid">
-        
-        <div class="tech-card admin-task-card">
-            <div class="node corner-tl"></div><div class="node corner-tr"></div>
-            <div class="node corner-bl"></div><div class="node corner-br"></div>
-            <div class="project-info">
-                <h4>engranaje-planetario.step</h4>
-                <p>Cliente: Santiago Flores</p>
-                <p>Fecha: 09 Abr 2026</p>
-            </div>
-            <div class="admin-actions">
-                <span class="status-indicator pending">Revisión Pendiente</span>
-                <form action="#" method="POST" class="time-assign-form">
-                    <label for="time1">Asignar Tiempo (Horas)</label>
-                    <input type="number" id="time1" name="print_time" min="0.5" step="0.5" required>
-                    <button type="submit" class="btn-primary auth-btn">Mandar a Imprimir</button>
-                </form>
-            </div>
-        </div>
+        {% for order in orders %}
+            <div class="tech-card {% if order.status == 'Imprimiendo' %}active-print{% endif %}">
+                <div class="node corner-tl"></div><div class="node corner-tr"></div>
+                <div class="node corner-bl"></div><div class="node corner-br"></div>
+                <div class="project-info">
+                    <h4>{{ order.filename }}</h4>
+                    
+                    {% if order.image_filename %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ order.image_filename) }}" class="model-thumbnail" alt="Vista previa del diseño">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='src/placeholder.png') }}" class="model-thumbnail" alt="Sin imagen de referencia">
+                    {% endif %}
 
-        <div class="tech-card project-card active-print">
-            <div class="node corner-tl"></div><div class="node corner-tr"></div>
-            <div class="node corner-bl"></div><div class="node corner-br"></div>
-            <div class="project-info">
-                <h4>carcasa-dron-v3.stl</h4>
-                <p>Cliente: Empresa The Spot</p>
-                <p>Fecha: 09 Abr 2026</p>
-            </div>
-            <div class="admin-actions">
-                <span class="status-indicator printing">En Máquina</span>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: 65%;"></div>
+                    <p>Cliente: {{ order.client_name }}</p>
+                    <p>Fecha: {{ order.created_at[:10] }}</p>
                 </div>
-                <form action="#" method="POST" class="time-assign-form">
-                    <button type="submit" class="btn-secondary auth-btn">Marcar Terminado</button>
-                </form>
-            </div>
-        </div>
+                
+                <div class="admin-actions">
+                    {% if order.status == 'Pendiente' %}
+                        <span class="status-indicator pending">Revisión Pendiente</span>
+                        <form action="{{ url_for('update_order', order_id=order.id) }}" method="POST" class="time-assign-form">
+                            <input type="hidden" name="action" value="quote">
+                            
+                            <label for="price_{{ order.id }}">Precio ($)</label>
+                            <input type="number" id="price_{{ order.id }}" name="price" min="0" step="0.01" required>
 
+                            <label for="time_{{ order.id }}">Tiempo Est. (Horas)</label>
+                            <input type="number" id="time_{{ order.id }}" name="print_time" min="0.5" step="0.5" required>
+
+                            <label for="notes_{{ order.id }}">Notas Técnicas (Opcional)</label>
+                            <input type="text" id="notes_{{ order.id }}" name="admin_notes" placeholder="Justificación de diseño...">
+
+                            <button type="submit" class="btn-primary auth-btn">Enviar Cotización</button>
+                        </form>
+
+                    {% elif order.status == 'Cotizado' %}
+                        <span class="status-indicator" style="background: var(--sand-bg); color: var(--black-ink);">Esperando Respuesta</span>
+                        <p class="time-est" style="margin-top: 1rem;">Cotizado: ${{ order.price }}</p>
+
+                    {% elif order.status == 'Aprobado' %}
+                        <span class="status-indicator" style="background: var(--red-light);">Aprobado por Cliente</span>
+                        <form action="{{ url_for('update_order', order_id=order.id) }}" method="POST" class="time-assign-form">
+                            <input type="hidden" name="action" value="start_print">
+                            <button type="submit" class="btn-primary auth-btn">Mandar a Imprimir</button>
+                        </form>
+
+                    {% elif order.status == 'Imprimiendo' %}
+                        <span class="status-indicator printing">En Máquina</span>
+                        <p class="time-est" style="margin-top: 1rem;">Asignado: {{ order.print_time_est }} hrs</p>
+                        <form action="{{ url_for('update_order', order_id=order.id) }}" method="POST" class="time-assign-form">
+                            <input type="hidden" name="action" value="finish_print">
+                            <button type="submit" class="btn-secondary auth-btn">Marcar Terminado</button>
+                        </form>
+                        
+                    {% elif order.status == 'Cancelado' %}
+                        <span class="status-indicator" style="background: transparent; color: var(--black-ink); border: 1px solid var(--black-ink);">Cancelado</span>
+
+                    {% else %}
+                        <span class="status-indicator" style="background: var(--sand-bg); color: var(--black-ink);">Terminado</span>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <p>No hay proyectos en la cola de producción.</p>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
