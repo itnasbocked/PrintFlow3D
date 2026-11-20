@@ -24,6 +24,23 @@ body {
 h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; margin: 0; }
 p { font-family: var(--font-body); font-weight: 300; line-height: 1.6; }
 
+.navbar a:not(.btn-primary):not(.btn-secondary) {
+    text-decoration: none;
+    color: var(--black-ink);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.navbar a:not(.btn-primary):not(.btn-secondary):hover {
+    color: var(--red-light);
+}
+
+/* Mantiene el texto claro en la landing page si la barra es transparente */
+.navbar:not(.navbar-solid) a:not(.btn-primary):not(.btn-secondary) {
+    color: var(--white);
+}
+
 .navbar {
     position: absolute;
     top: 0;

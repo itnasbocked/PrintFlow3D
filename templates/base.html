@@ -11,14 +11,17 @@
     <body>
         <nav class="navbar {% if request.path != '/' %}navbar-solid{% endif %}">
             <div class="logo">PrintFlow <span>3D</span></div>
-            <div class="nav-menu">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
                 {% if session.get('user_id') %}
-                    <a href="{{ url_for('dashboard') }}">Mi Tablero</a>
-                    <a href="{{ url_for('new_order') }}" class="btn-primary" style="padding: 0.45rem 0.9rem;">+ Nuevo Pedido</a>
                     {% if session.get('role') == 'admin' %}
-                        <a href="{{ url_for('admin_dashboard') }}">Panel Admin</a>
+                        <span style="font-size: 0.85rem; opacity: 0.8;">Operador: <strong>{{ session.get('email') }}</strong></span>
+                        <a href="{{ url_for('admin_dashboard') }}">Cola de Producción</a>
+                        <a href="{{ url_for('logout') }}" class="btn-secondary logout-btn">Cerrar Sesión</a>
+                    {% else %}
+                        <a href="{{ url_for('dashboard') }}">Mi Tablero</a>
+                        <a href="{{ url_for('new_order') }}" class="btn-primary" style="padding: 0.45rem 0.9rem;">+ Nuevo Pedido</a>
+                        <a href="{{ url_for('logout') }}" class="btn-secondary logout-btn">Salir</a>
                     {% endif %}
-                    <a href="{{ url_for('logout') }}" class="btn-secondary logout-btn">Salir</a>
                 {% else %}
                     <a href="/#solucion">La Solución</a>
                     <a href="/#flujo">Workflow</a>

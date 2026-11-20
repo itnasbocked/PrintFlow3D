@@ -31,6 +31,10 @@ class Order(db.Model):
     volume_cm3 = db.Column(db.Float, nullable=True)
     status = db.Column(db.Text, nullable=False, default='Pendiente')
     print_time_est = db.Column(db.Float, nullable=True)
+    status = db.Column(db.Text, nullable=False, default='Pendiente')
+    print_time_est = db.Column(db.Float, nullable=True)
+    price = db.Column(db.Float, nullable=True)
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
     created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now, nullable=False)
 

@@ -76,6 +76,18 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def client_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        if session.get('role') != 'client':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': 'Acción exclusiva para cuentas de cliente.'}), 403
+            return redirect(url_for('admin_dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # --- RUTAS DE AUTENTICACIÓN ---
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -153,7 +165,7 @@ def download_model(order_id):
     )
 
 @app.route('/dashboard')
-@login_required
+@client_required
 def dashboard():
     orders = Order.query.filter(
         Order.user_id == session['user_id'],
@@ -206,12 +218,12 @@ def update_order(order_id):
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/new-order')
-@login_required
+@client_required
 def new_order():
     return render_template('client/new_order.html')
 
 @app.route('/api/inspect-model', methods=['POST'])
-@login_required
+@client_required
 def inspect_model():
     if 'file' not in request.files:
         return jsonify({'error': 'No se recibió ningún archivo.'}), 400
@@ -251,7 +263,7 @@ def inspect_model():
     }), 200
 
 @app.route('/confirm-order/<int:order_id>', methods=['POST'])
-@login_required
+@client_required
 def confirm_order(order_id):
     order = db.session.get(Order, order_id)
     if not order or order.user_id != session['user_id']:
@@ -330,7 +342,27 @@ def index():
         return redirect(url_for('admin_dashboard' if session.get('role') == 'admin' else 'dashboard'))
     return redirect(url_for('login'))
 
+def seed_admin():
+    """Inserta el usuario administrador por defecto si aún no existe."""
+    admin_email = 'admin@printflow3d.com'
+    if not User.query.filter_by(email=admin_email).first():
+        admin_user = User(
+            name='Operador Taller 3D',
+            email=admin_email,
+            password=generate_password_hash('admin123'),
+            role='admin'
+        )
+        db.session.add(admin_user)
+        db.session.commit()
+
+@app.cli.command('seed-admin')
+def seed_admin_command():
+    """Permite ejecutar 'flask seed-admin' desde la terminal."""
+    seed_admin()
+    print('Administrador verificado/creado: admin@printflow3d.com')
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        seed_admin()
     app.run(debug=True, host='0.0.0.0', port=5000)
