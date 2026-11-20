@@ -13,15 +13,16 @@
             <div class="logo">PrintFlow <span>3D</span></div>
             <div class="nav-menu">
                 {% if session.get('user_id') %}
-                    <a href="/client">Panel Cliente</a>
-                    {% if session.get('email') == 'admin@printflow3d.com' %}
-                        <a href="/admin">Panel Admin</a>
+                    <a href="{{ url_for('dashboard') }}">Mi Tablero</a>
+                    <a href="{{ url_for('new_order') }}" class="btn-primary" style="padding: 0.45rem 0.9rem;">+ Nuevo Pedido</a>
+                    {% if session.get('role') == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}">Panel Admin</a>
                     {% endif %}
-                    <a href="/logout" class="btn-secondary logout-btn">Cerrar Sesion</a>
+                    <a href="{{ url_for('logout') }}" class="btn-secondary logout-btn">Salir</a>
                 {% else %}
-                    <a href="/#solucion">La Solucion</a>
+                    <a href="/#solucion">La Solución</a>
                     <a href="/#flujo">Workflow</a>
-                    <a href="/login" class="btn-primary">Iniciar Sesion</a>
+                    <a href="{{ url_for('login') }}" class="btn-primary">Iniciar Sesión</a>
                 {% endif %}
             </div>
         </nav>

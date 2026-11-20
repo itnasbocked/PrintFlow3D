@@ -1,0 +1,13 @@
+services:
+  printflow3d:
+    build: .
+    container_name: printflow3d_app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./protected_uploads:/app/protected_uploads
+      - ./printflow3d.db:/app/printflow3d.db
+    environment:
+      - SECRET_KEY=printflow3d-prod-secret-2026
+      - FLASK_APP=app.py
+    restart: unless-stopped

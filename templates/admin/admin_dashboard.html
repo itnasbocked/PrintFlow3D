@@ -1,95 +1,115 @@
 {% extends "base.html" %}
 
-{% block title %}Administración | PrintFlow 3D{% endblock %}
+{% block title %}Gestión de Producción | PrintFlow 3D{% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
-    <header class="dashboard-header">
-        <h2>Gestión de Producción <span class="tag">Administrador</span></h2>
+    <div id="realtime-alert-box"></div>
+
+    <header class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2 style="margin: 0;">COLA GLOBAL DE PRODUCCIÓN <span class="tag">ADMIN</span></h2>
+            <p style="margin: 0.25rem 0 0 0; opacity: 0.85;">Validación de geometrías, estimación técnica y cambio reactivo de estados</p>
+        </div>
+
+        <div class="dashboard-stats" style="margin: 0;">
+            <div class="stat-box">
+                <span id="stat-cola" class="stat-number">{{ pendientes }}</span>
+                <span class="stat-label">PENDIENTES</span>
+            </div>
+            <div class="stat-box">
+                <span id="stat-imprimiendo" class="stat-number">{{ en_maquina }}</span>
+                <span class="stat-label">EN MÁQUINA</span>
+            </div>
+        </div>
     </header>
 
-    <div class="dashboard-stats">
-        <div class="stat-box">
-            <span class="stat-number">{{ orders|length }}</span>
-            <span class="stat-label">Total Solicitudes</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-number">{{ pendientes }}</span>
-            <span class="stat-label">Pendientes</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-number">{{ en_maquina }}</span>
-            <span class="stat-label">En Máquina</span>
-        </div>
-    </div>
-
-    <h3 class="section-subtitle">Cola de Solicitudes</h3>
     <div class="projects-grid">
         {% for order in orders %}
-            <div class="tech-card {% if order.status == 'Imprimiendo' %}active-print{% endif %}">
-                <div class="node corner-tl"></div><div class="node corner-tr"></div>
-                <div class="node corner-bl"></div><div class="node corner-br"></div>
-                <div class="project-info">
-                    <h4>{{ order.filename }}</h4>
-                    
-                    {% if order.image_filename %}
-                        <img src="{{ url_for('static', filename='uploads/' ~ order.image_filename) }}" class="model-thumbnail" alt="Vista previa del diseño">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='src/placeholder.png') }}" class="model-thumbnail" alt="Sin imagen de referencia">
-                    {% endif %}
+        <div class="tech-card {% if order.status == 'Imprimiendo' %}active-print{% endif %}"
+             data-order-id="{{ order.id }}"
+             data-status="{{ order.status }}"
+             data-time="{{ order.print_time_est if order.print_time_est is not none else '' }}">
+            <div class="node corner-tl"></div><div class="node corner-tr"></div>
+            <div class="node corner-bl"></div><div class="node corner-br"></div>
 
-                    <p>Cliente: {{ order.client_name }}</p>
-                    <p>Fecha: {{ order.created_at[:10] }}</p>
+            <div class="project-info">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <small style="color: var(--red-light); font-weight: bold;">PEDIDO #{{ order.id }}</small>
+                    <span class="tag">{{ order.file_format }}</span>
                 </div>
-                
-                <div class="admin-actions">
-                    {% if order.status == 'Pendiente' %}
-                        <span class="status-indicator pending">Revisión Pendiente</span>
-                        <form action="{{ url_for('update_order', order_id=order.id) }}" method="POST" class="time-assign-form">
-                            <input type="hidden" name="action" value="quote">
-                            
-                            <label for="price_{{ order.id }}">Precio ($)</label>
-                            <input type="number" id="price_{{ order.id }}" name="price" min="0" step="0.01" required>
+                <h4 style="margin: 0.35rem 0;">{{ order.original_filename }}</h4>
+                <p>Cliente: {{ order.client.name }} (ID: #C-{{ order.user_id }})</p>
+                <p>Recibido: {{ order.created_at.strftime('%d/%b/%Y %H:%M') }}</p>
+                <p>Volumen: {{ order.volume_cm3 or '--' }} cm³ | Preliminar: {{ order.print_time_est or '--' }} hrs</p>
 
-                            <label for="time_{{ order.id }}">Tiempo Est. (Horas)</label>
-                            <input type="number" id="time_{{ order.id }}" name="print_time" min="0.5" step="0.5" required>
-
-                            <label for="notes_{{ order.id }}">Notas Técnicas (Opcional)</label>
-                            <input type="text" id="notes_{{ order.id }}" name="admin_notes" placeholder="Justificación de diseño...">
-
-                            <button type="submit" class="btn-primary auth-btn">Enviar Cotización</button>
-                        </form>
-
-                    {% elif order.status == 'Cotizado' %}
-                        <span class="status-indicator" style="background: var(--sand-bg); color: var(--black-ink);">Esperando Respuesta</span>
-                        <p class="time-est" style="margin-top: 1rem;">Cotizado: ${{ order.price }}</p>
-
-                    {% elif order.status == 'Aprobado' %}
-                        <span class="status-indicator" style="background: var(--red-light);">Aprobado por Cliente</span>
-                        <form action="{{ url_for('update_order', order_id=order.id) }}" method="POST" class="time-assign-form">
-                            <input type="hidden" name="action" value="start_print">
-                            <button type="submit" class="btn-primary auth-btn">Mandar a Imprimir</button>
-                        </form>
-
-                    {% elif order.status == 'Imprimiendo' %}
-                        <span class="status-indicator printing">En Máquina</span>
-                        <p class="time-est" style="margin-top: 1rem;">Asignado: {{ order.print_time_est }} hrs</p>
-                        <form action="{{ url_for('update_order', order_id=order.id) }}" method="POST" class="time-assign-form">
-                            <input type="hidden" name="action" value="finish_print">
-                            <button type="submit" class="btn-secondary auth-btn">Marcar Terminado</button>
-                        </form>
-                        
-                    {% elif order.status == 'Cancelado' %}
-                        <span class="status-indicator" style="background: transparent; color: var(--black-ink); border: 1px solid var(--black-ink);">Cancelado</span>
-
-                    {% else %}
-                        <span class="status-indicator" style="background: var(--sand-bg); color: var(--black-ink);">Terminado</span>
-                    {% endif %}
+                <div style="display: flex; gap: 0.5rem; margin: 1rem 0;">
+                    <a href="{{ url_for('download_model', order_id=order.id) }}" class="btn-secondary" style="flex: 1; text-align: center; text-decoration: none; font-size: 0.8rem; padding: 0.5rem;">
+                        Descargar Archivo
+                    </a>
+                    <button type="button" class="btn-primary" style="flex: 1; font-size: 0.8rem; padding: 0.5rem;"
+                            onclick="openModalViewer('{{ order.id }}', '{{ order.file_format }}', '{{ order.original_filename }}')">
+                        Abrir en Visor 3D
+                    </button>
                 </div>
             </div>
+
+            <div class="admin-actions">
+                <span class="status-indicator js-status-badge {% if order.status == 'Imprimiendo' %}printing{% elif order.status != 'Terminado' %}pending{% endif %}">
+                    {{ order.status|upper }}
+                </span>
+
+                <form action="{{ url_for('update_order', order_id=order.id) }}" method="POST" class="time-assign-form" style="margin-top: 1rem;">
+                    <label for="time_{{ order.id }}">Asignar Tiempo Final (Horas):</label>
+                    <input type="number" id="time_{{ order.id }}" name="print_time" min="0.25" step="0.25" value="{{ order.print_time_est or '' }}" required>
+
+                    <label for="status_{{ order.id }}">Cambiar Estado:</label>
+                    <select id="status_{{ order.id }}" name="status" style="width: 100%; padding: 0.5rem; margin-bottom: 0.75rem; border: 1px solid var(--black-ink);">
+                        <option value="Pendiente" {% if order.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="En Cola" {% if order.status == 'En Cola' %}selected{% endif %}>En Cola</option>
+                        <option value="Imprimiendo" {% if order.status == 'Imprimiendo' %}selected{% endif %}>Imprimiendo</option>
+                        <option value="Terminado" {% if order.status == 'Terminado' %}selected{% endif %}>Terminado</option>
+                    </select>
+
+                    <button type="submit" class="btn-primary auth-btn">GUARDAR Y NOTIFICAR AL CLIENTE</button>
+                </form>
+            </div>
+        </div>
         {% else %}
-            <p>No hay proyectos en la cola de producción.</p>
+        <p>No hay proyectos en la cola de producción.</p>
         {% endfor %}
     </div>
 </div>
+
+<!-- MODAL VISOR 3D -->
+<div id="viewer-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+    <div class="tech-card" style="width: 100%; max-width: 680px; background: #141414; color: #fff; padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <strong id="modal-model-title">Visor 3D</strong>
+            <button type="button" onclick="closeModalViewer()" class="btn-secondary" style="color: #fff; border-color: #666; padding: 0.25rem 0.6rem;">Cerrar ✕</button>
+        </div>
+        <div id="modal-threejs-container" style="width: 100%; height: 360px;"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+<script src="{{ url_for('static', filename='js/viewer3d.js') }}"></script>
+<script src="{{ url_for('static', filename='js/realtime.js') }}"></script>
+<script>
+let modalViewer = null;
+function openModalViewer(orderId, format, filename) {
+    const modal = document.getElementById('viewer-modal');
+    document.getElementById('modal-model-title').textContent = filename;
+    modal.style.display = 'flex';
+    if (!modalViewer) modalViewer = new PrintFlowViewer('modal-threejs-container');
+    modalViewer.onResize();
+    modalViewer.loadFromUrl(`/api/model-stream/${orderId}`, format);
+}
+function closeModalViewer() {
+    document.getElementById('viewer-modal').style.display = 'none';
+}
+</script>
 {% endblock %}
