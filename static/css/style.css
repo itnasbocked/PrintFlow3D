@@ -629,3 +629,51 @@ p { font-family: var(--font-body); font-weight: 300; line-height: 1.6; }
     background-color: var(--sand-bg);
     color: var(--black-ink);
 }
+
+.flash-floating-wrapper {
+    position: fixed;
+    top: 82px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(92%, 720px);
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.flash-toast {
+    pointer-events: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1.15rem;
+    border: 1px solid var(--black-ink, #141414);
+    background-color: var(--sand-bg, #e6dfd3);
+    color: var(--black-ink, #141414);
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 4px 4px 0px var(--black-ink, #141414);
+}
+
+.flash-toast.error {
+    background-color: #b8534b;
+    color: #ffffff;
+}
+
+.flash-toast.success {
+    background-color: #2e6f40;
+    color: #ffffff;
+}
+
+.flash-toast button {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0 0.25rem;
+    line-height: 1;
+}

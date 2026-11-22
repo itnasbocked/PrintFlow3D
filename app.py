@@ -164,26 +164,6 @@ def download_model(order_id):
         download_name=order.original_filename
     )
 
-@app.route('/dashboard')
-@client_required
-def dashboard():
-    orders = Order.query.filter(
-        Order.user_id == session['user_id'],
-        Order.status != 'Inspección Preliminar'
-    ).order_by(Order.created_at.desc()).all()
-    
-    en_cola = sum(1 for o in orders if o.status in ('Pendiente', 'En Cola'))
-    imprimiendo = sum(1 for o in orders if o.status == 'Imprimiendo')
-    terminados = sum(1 for o in orders if o.status == 'Terminado')
-    
-    return render_template(
-        'client/client_dashboard.html',
-        orders=orders,
-        en_cola=en_cola,
-        imprimiendo=imprimiendo,
-        terminados=terminados
-    )
-
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
@@ -197,6 +177,26 @@ def admin_dashboard():
         en_maquina=en_maquina
     )
 
+@app.route('/dashboard')
+@client_required
+def dashboard():
+    orders = Order.query.filter(
+        Order.user_id == session['user_id'],
+        Order.status != 'Inspección Preliminar'
+    ).order_by(Order.created_at.desc()).all()
+
+    en_cola = sum(1 for o in orders if o.status in ('Pendiente', 'Cotizado', 'En Cola'))
+    imprimiendo = sum(1 for o in orders if o.status == 'Imprimiendo')
+    terminados = sum(1 for o in orders if o.status == 'Terminado')
+
+    return render_template(
+        'client/client_dashboard.html',
+        orders=orders,
+        en_cola=en_cola,
+        imprimiendo=imprimiendo,
+        terminados=terminados
+    )
+
 @app.route('/admin/update_order/<int:order_id>', methods=['POST'])
 @admin_required
 def update_order(order_id):
@@ -206,16 +206,46 @@ def update_order(order_id):
 
     new_status = request.form.get('status')
     print_time = request.form.get('print_time')
+    price = request.form.get('price')
 
     if print_time:
         order.print_time_est = float(print_time)
+
+    if price:
+        order.price = float(price)
+        # Si estaba Pendiente y el operador asignó precio sin cambiar el select, pasa automático a Cotizado
+        if order.status == 'Pendiente' and new_status == 'Pendiente':
+            new_status = 'Cotizado'
 
     if new_status:
         change_order_status(order, new_status, session['user_id'])
 
     db.session.commit()
-    flash(f'Pedido #{order.id} actualizado a {order.status}.', 'success')
+    flash(f'Pedido #{order.id} actualizado ({order.status}).', 'success')
     return redirect(url_for('admin_dashboard'))
+
+@app.route('/order/<int:order_id>/respond', methods=['POST'])
+@client_required
+def respond_quote(order_id):
+    order = db.session.get(Order, order_id)
+    if not order or order.user_id != session['user_id']:
+        abort(403)
+
+    if order.status != 'Cotizado':
+        flash('Este pedido no tiene una cotización pendiente de aprobación.', 'error')
+        return redirect(url_for('dashboard'))
+
+    action = request.form.get('action')
+    if action == 'accept':
+        change_order_status(order, 'En Cola', session['user_id'])
+        db.session.commit()
+        flash(f'Cotización de ${order.price:.2f} aceptada. Pedido #{order.id} enviado a cola de impresión.', 'success')
+    elif action == 'decline':
+        change_order_status(order, 'Rechazado', session['user_id'])
+        db.session.commit()
+        flash(f'Has declinado la cotización del pedido #{order.id}.', 'info')
+
+    return redirect(url_for('dashboard'))
 
 @app.route('/new-order')
 @client_required
@@ -311,7 +341,8 @@ def stream_orders():
                             'id': o.id,
                             'filename': o.original_filename,
                             'status': o.status,
-                            'print_time_est': o.print_time_est
+                            'print_time_est': o.print_time_est,
+                            'price': o.price
                         }
                         for o in orders
                     ]
@@ -338,9 +369,7 @@ def order_preview(order_id):
 
 @app.route('/')
 def index():
-    if 'user_id' in session:
-        return redirect(url_for('admin_dashboard' if session.get('role') == 'admin' else 'dashboard'))
-    return redirect(url_for('login'))
+    return render_template('index.html')
 
 def seed_admin():
     """Inserta el usuario administrador por defecto si aún no existe."""

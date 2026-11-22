@@ -10,7 +10,7 @@
     </head>
     <body>
         <nav class="navbar {% if request.path != '/' %}navbar-solid{% endif %}">
-            <div class="logo">PrintFlow <span>3D</span></div>
+            <a href="{{ url_for('index') }}" class="logo" style="text-decoration: none;">PrintFlow <span>3D</span></a>
             <div style="display: flex; align-items: center; gap: 1.5rem;">
                 {% if session.get('user_id') %}
                     {% if session.get('role') == 'admin' %}
@@ -33,10 +33,11 @@
         <main>
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    <div class="flash-container" style="padding: 1rem 5%; margin-top: 5rem;">
+                    <div class="flash-floating-wrapper">
                         {% for category, message in messages %}
-                            <div class="flash-message {{ category }}">
-                                {{ message }}
+                            <div class="flash-toast {{ category }}">
+                                <span>{{ message }}</span>
+                                <button type="button" onclick="this.parentElement.remove()">✕</button>
                             </div>
                         {% endfor %}
                     </div>

@@ -33,9 +33,29 @@
     <div class="projects-grid">
         {% for order in orders %}
         <div class="tech-card project-card {% if order.status == 'Imprimiendo' %}active-print{% endif %}"
+            data-order-id="{{ order.id }}"
+            data-status="{{ order.status }}"
+            data-time="{{ order.print_time_est if order.print_time_est is not none else '' }}">
+            data-price="{{ order.price if order.price is not none else '' }}">
+            <div class="node corner-tl"></div><div class="node corner-tr"></div>
+            <div class="node corner-bl"></div><div class="node corner-br"></div>
+
+            <div class="project-info">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0;">{{ order.original_filename }}</h4>
+                    <span class="tag">PEDIDO #{{ order.id }}</span>
+                </div>
+                <p>Subido: {{ order.created_at.strftime('%d/%b/%Y') }} | Formato: {{ order.file_format }}</p>
+                {% if order.volume_cm3 %}
+                    <p>Volumen: {{ order.volume_cm3 }} cm³ | Peso: {{ order.file_size_kb }} KB</p>
+                {% endif %}
+            </div>
+
+            <div class="tech-card project-card {% if order.status == 'Imprimiendo' %}active-print{% endif %}"
              data-order-id="{{ order.id }}"
              data-status="{{ order.status }}"
-             data-time="{{ order.print_time_est if order.print_time_est is not none else '' }}">
+             data-time="{{ order.print_time_est if order.print_time_est is not none else '' }}"
+             data-price="{{ order.price if order.price is not none else '' }}">
             <div class="node corner-tl"></div><div class="node corner-tr"></div>
             <div class="node corner-bl"></div><div class="node corner-br"></div>
 
@@ -55,15 +75,33 @@
                     {{ order.status|upper }}
                 </span>
 
-                <p class="time-est js-time-est" style="margin-top: 0.75rem;">
+                <p class="time-est js-time-est" style="margin-top: 0.75rem; margin-bottom: 0.25rem;">
                     {% if order.print_time_est %}Tiempo Est: {{ order.print_time_est }} hrs{% else %}Tiempo Est: Pendiente{% endif %}
                 </p>
 
-                <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                <p class="js-price-est" style="margin: 0; font-weight: bold; color: var(--red-light);">
+                    {% if order.price %}Cotización: ${{ "%.2f"|format(order.price) }} MXN{% else %}Cotización: En revisión{% endif %}
+                </p>
+
+                <!-- Botones de respuesta cuando el pedido está Cotizado -->
+                <div class="js-quote-actions" style="margin-top: 0.75rem;">
+                    {% if order.status == 'Cotizado' %}
+                    <form action="{{ url_for('respond_quote', order_id=order.id) }}" method="POST" style="display: flex; gap: 0.5rem;">
+                        <button type="submit" name="action" value="accept" class="btn-primary" style="flex: 1; padding: 0.5rem; font-size: 0.8rem;">
+                            Aceptar Oferta
+                        </button>
+                        <button type="submit" name="action" value="decline" class="btn-secondary" style="flex: 1; padding: 0.5rem; font-size: 0.8rem;">
+                            Declinar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap;">
                     <button type="button"
                             class="btn-primary"
                             style="flex: 1; padding: 0.5rem; font-size: 0.8rem;"
-                            onclick="openModalViewer('{{ order.id}}', '{{ order.file_format }}', '{{ order.original_filename }}')">
+                            onclick="openModalViewer('{{ order.id }}', '{{ order.file_format }}', '{{ order.original_filename }}')">
                         VER MODELO 3D
                     </button>
                     <a href="https://wa.me/?text={{ ('Sigue mi pedido #' ~ order.id ~ ' (' ~ order.original_filename ~ ') en PrintFlow3D: ' ~ request.host_url ~ 'order/' ~ order.id ~ '/preview')|urlencode }}"

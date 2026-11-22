@@ -5,6 +5,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
+      - ./protected_uploads:/app/protected_uploads:Z
+      - ./printflow3d.db:/app/printflow3d.db:Z
       - ./protected_uploads:/app/protected_uploads
       - ./printflow3d.db:/app/printflow3d.db
     environment:

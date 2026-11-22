@@ -60,18 +60,23 @@
                 </span>
 
                 <form action="{{ url_for('update_order', order_id=order.id) }}" method="POST" class="time-assign-form" style="margin-top: 1rem;">
-                    <label for="time_{{ order.id }}">Asignar Tiempo Final (Horas):</label>
+                    <label for="time_{{ order.id }}">Tiempo Final (Horas):</label>
                     <input type="number" id="time_{{ order.id }}" name="print_time" min="0.25" step="0.25" value="{{ order.print_time_est or '' }}" required>
 
-                    <label for="status_{{ order.id }}">Cambiar Estado:</label>
+                    <label for="price_{{ order.id }}">Cotización ($ MXN):</label>
+                    <input type="number" id="price_{{ order.id }}" name="price" min="1" step="0.50" placeholder="Ej. 250.00" value="{{ '%.2f'|format(order.price) if order.price else '' }}">
+
+                    <label for="status_{{ order.id }}">Estado del Pedido:</label>
                     <select id="status_{{ order.id }}" name="status" style="width: 100%; padding: 0.5rem; margin-bottom: 0.75rem; border: 1px solid var(--black-ink);">
                         <option value="Pendiente" {% if order.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                        <option value="Cotizado" {% if order.status == 'Cotizado' %}selected{% endif %}>Cotizado (Enviar Oferta)</option>
                         <option value="En Cola" {% if order.status == 'En Cola' %}selected{% endif %}>En Cola</option>
                         <option value="Imprimiendo" {% if order.status == 'Imprimiendo' %}selected{% endif %}>Imprimiendo</option>
                         <option value="Terminado" {% if order.status == 'Terminado' %}selected{% endif %}>Terminado</option>
+                        <option value="Rechazado" {% if order.status == 'Rechazado' %}selected{% endif %}>Rechazado</option>
                     </select>
 
-                    <button type="submit" class="btn-primary auth-btn">GUARDAR Y NOTIFICAR AL CLIENTE</button>
+                    <button type="submit" class="btn-primary auth-btn">GUARDAR Y NOTIFICAR</button>
                 </form>
             </div>
         </div>
